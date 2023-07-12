@@ -5,20 +5,20 @@ import {getGraphemes} from './getGraphemes';
 
 // Note: A similar Ruby implementation of this function also exists at https://github.com/Shopify/shopify-i18n/blob/main/lib/shopify-i18n/name_formatter.rb.
 export function tryAbbreviateName({
-  firstName,
-  lastName,
+  givenName,
+  familyName,
   idealMaxLength = 3,
 }: {
-  firstName?: string;
-  lastName?: string;
+  givenName?: string;
+  familyName?: string;
   idealMaxLength?: number;
 }): string | undefined {
-  if (!firstName && !lastName) {
+  if (!givenName && !familyName) {
     return undefined;
   }
 
-  const firstNameTrimmed = firstName?.trim();
-  const lastNameTrimmed = lastName?.trim();
+  const firstNameTrimmed = givenName?.trim();
+  const lastNameTrimmed = familyName?.trim();
 
   const combinedName = [firstNameTrimmed, lastNameTrimmed].join('');
   if (new RegExp(`${UnicodeCharacterSet.Punctuation}|\\s`).test(combinedName)) {

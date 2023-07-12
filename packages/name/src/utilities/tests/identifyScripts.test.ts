@@ -1,7 +1,7 @@
 import {identifyScripts} from '../identifyScripts';
 import {UnicodeCharacterSet} from '../../constants';
 
-describe('identifyScript', () => {
+describe('identifyScripts', () => {
   it('identifies English as Latin script', () => {
     expect(identifyScripts('Hello my name Mike')).toStrictEqual([
       UnicodeCharacterSet.Latin,

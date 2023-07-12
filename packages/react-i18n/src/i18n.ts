@@ -31,7 +31,6 @@ import {
   RTL_LANGUAGES,
   currencyDecimalPlaces,
   DEFAULT_DECIMAL_PLACES,
-  EASTERN_NAME_ORDER_FORMATTERS,
   CurrencyShortFormException,
   UnicodeCharacterSet,
 } from './constants';
@@ -45,9 +44,6 @@ import {
   memoizedNumberFormatter,
   memoizedPluralRules,
   convertFirstSpaceToNonBreakingSpace,
-  tryAbbreviateName,
-  tryAbbreviateBusinessName,
-  identifyScripts,
 } from './utilities';
 
 export interface NumberFormatOptions extends Intl.NumberFormatOptions {
@@ -360,71 +356,6 @@ export class I18n {
    */
   getCurrencySymbolLocalized(locale: string, currency: string) {
     return this.getShortCurrencySymbol(currency, locale);
-  }
-
-  formatName(
-    firstName?: string,
-    lastName?: string,
-    options?: {full?: boolean},
-  ) {
-    if (!firstName) {
-      return lastName || '';
-    }
-    if (!lastName) {
-      return firstName;
-    }
-
-    const isFullName = Boolean(options && options.full);
-
-    const customNameFormatter =
-      EASTERN_NAME_ORDER_FORMATTERS.get(this.locale) ||
-      EASTERN_NAME_ORDER_FORMATTERS.get(this.language);
-
-    if (customNameFormatter) {
-      return customNameFormatter(firstName, lastName, isFullName);
-    }
-    if (isFullName) {
-      return `${firstName} ${lastName}`;
-    }
-    return firstName;
-  }
-
-  // Note: A similar Ruby implementation of this function also exists at https://github.com/Shopify/shopify-i18n/blob/main/lib/shopify-i18n/name_formatter.rb.
-  abbreviateName({
-    firstName,
-    lastName,
-    idealMaxLength = 3,
-  }: {
-    firstName?: string;
-    lastName?: string;
-    idealMaxLength?: number;
-  }) {
-    return (
-      tryAbbreviateName({firstName, lastName, idealMaxLength}) ??
-      this.formatName(firstName, lastName)
-    );
-  }
-
-  // Note: A similar Ruby implementation of this function also exists at https://github.com/Shopify/shopify-i18n/blob/main/lib/shopify-i18n/business_name_formatter.rb.
-  abbreviateBusinessName({
-    name,
-    idealMaxLength = 3,
-  }: {
-    name?: string;
-    idealMaxLength?: number;
-  }) {
-    return tryAbbreviateBusinessName({name, idealMaxLength}) ?? name;
-  }
-
-  identifyScript(text: string) {
-    return identifyScripts(text);
-  }
-
-  hasEasternNameOrderFormatter() {
-    const easternNameOrderFormatter =
-      EASTERN_NAME_ORDER_FORMATTERS.get(this.locale) ||
-      EASTERN_NAME_ORDER_FORMATTERS.get(this.language);
-    return Boolean(easternNameOrderFormatter);
   }
 
   // eslint-disable-next-line @typescript-eslint/member-ordering

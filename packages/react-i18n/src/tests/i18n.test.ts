@@ -6,11 +6,7 @@ import {I18n} from '../i18n';
 import {LanguageDirection} from '../types';
 import {DateStyle, Weekday} from '../constants';
 import {MissingTranslationError} from '../errors';
-import {
-  convertFirstSpaceToNonBreakingSpace,
-  tryAbbreviateName,
-} from '../utilities';
-import {tryAbbreviateBusinessName} from '../utilities/tryAbbreviateBusinessName';
+import {convertFirstSpaceToNonBreakingSpace} from '../utilities';
 
 jest.mock('../utilities', () => ({
   ...jest.requireActual('../utilities'),
@@ -2320,165 +2316,6 @@ describe('I18n', () => {
     });
   });
 
-  describe('#formatName()', () => {
-    it('returns an empty string when nothing is defined', () => {
-      const i18n = new I18n(defaultTranslations, {locale: 'en'});
-      expect(i18n.formatName()).toBe('');
-    });
-
-    it('returns only the firstName when lastName is missing', () => {
-      const i18n = new I18n(defaultTranslations, {locale: 'en'});
-
-      expect(i18n.formatName('first')).toBe('first');
-      expect(i18n.formatName('first', '')).toBe('first');
-    });
-
-    it('returns only the lastName when firstName is missing', () => {
-      const i18n = new I18n(defaultTranslations, {locale: 'en'});
-
-      expect(i18n.formatName('', 'last')).toBe('last');
-    });
-
-    it('defaults to firstName for unknown locale', () => {
-      const i18n = new I18n(defaultTranslations, {locale: 'unknown'});
-
-      expect(i18n.formatName('first', 'last')).toBe('first');
-    });
-
-    it('uses fallback locale value for locale without custom formatter', () => {
-      const i18n = new I18n(defaultTranslations, {locale: 'fr-CA'});
-
-      expect(i18n.formatName('first', 'last')).toBe('first');
-    });
-
-    it('returns firstName for English', () => {
-      const i18n = new I18n(defaultTranslations, {locale: 'en'});
-
-      expect(i18n.formatName('first', 'last')).toBe('first');
-    });
-
-    it('returns custom name for Japanese', () => {
-      const i18n = new I18n(defaultTranslations, {locale: 'ja'});
-
-      expect(i18n.formatName('first', 'last')).toBe('last様');
-    });
-
-    it('returns lastName only, for zh-CN', () => {
-      const i18n = new I18n(defaultTranslations, {locale: 'zh-CN'});
-
-      expect(i18n.formatName('first', 'last')).toBe('last');
-    });
-
-    it('returns lastName only, for zh-TW', () => {
-      const i18n = new I18n(defaultTranslations, {locale: 'zh-TW'});
-
-      expect(i18n.formatName('first', 'last')).toBe('last');
-    });
-
-    it('returns only the firstName when lastName is missing using full', () => {
-      const i18n = new I18n(defaultTranslations, {locale: 'en'});
-
-      expect(i18n.formatName('first', '', {full: true})).toBe('first');
-      expect(i18n.formatName('first', undefined, {full: true})).toBe('first');
-    });
-
-    it('returns only the lastName when firstName is missing using full', () => {
-      const i18n = new I18n(defaultTranslations, {locale: 'en'});
-
-      expect(i18n.formatName('', 'last', {full: true})).toBe('last');
-    });
-
-    it('returns a string when lastName is undefined using full', () => {
-      const i18n = new I18n(defaultTranslations, {locale: 'en'});
-
-      expect(i18n.formatName('', undefined, {full: true})).toBe('');
-    });
-
-    it('returns a string when first and lastName are missing using full', () => {
-      const i18n = new I18n(defaultTranslations, {locale: 'en'});
-
-      expect(i18n.formatName(undefined, undefined, {full: true})).toBe('');
-    });
-
-    it('defaults to firstName lastName for unknown locale', () => {
-      const i18n = new I18n(defaultTranslations, {locale: 'unknown'});
-
-      expect(i18n.formatName('first', 'last', {full: true})).toBe('first last');
-    });
-
-    it('uses fallback locale value for locale without custom formatter using full', () => {
-      const i18n = new I18n(defaultTranslations, {locale: 'fr-CA'});
-
-      expect(i18n.formatName('first', 'last', {full: true})).toBe('first last');
-    });
-
-    it('returns firstName first for English', () => {
-      const i18n = new I18n(defaultTranslations, {locale: 'en'});
-
-      expect(i18n.formatName('first', 'last', {full: true})).toBe('first last');
-    });
-
-    it('returns lastName first and no space for Japanese', () => {
-      const i18n = new I18n(defaultTranslations, {locale: 'ja'});
-
-      expect(i18n.formatName('first', 'last', {full: true})).toBe('lastfirst');
-    });
-
-    it('returns lastName first and no space for Korean', () => {
-      const i18n = new I18n(defaultTranslations, {locale: 'ko'});
-
-      expect(i18n.formatName('first', 'last', {full: true})).toBe('lastfirst');
-    });
-
-    it('returns lastName first and no space for zh-CN', () => {
-      const i18n = new I18n(defaultTranslations, {locale: 'zh-CN'});
-
-      expect(i18n.formatName('first', 'last', {full: true})).toBe('lastfirst');
-    });
-
-    it('returns lastName first and no space for zh-TW', () => {
-      const i18n = new I18n(defaultTranslations, {locale: 'zh-TW'});
-
-      expect(i18n.formatName('first', 'last', {full: true})).toBe('lastfirst');
-    });
-  });
-
-  describe('#abbreviateName()', () => {
-    it('returns formatName if no abbreviation found', () => {
-      // no abbreviation as has space in last name
-      const name = {firstName: 'Michael', lastName: 'van Finkle'};
-      const i18n = new I18n(defaultTranslations, {locale: 'en'});
-      expect(i18n.abbreviateName(name)).toBe(
-        i18n.formatName(name.firstName, name.lastName),
-      );
-    });
-
-    it('returns abbreviated name if abbreviation found', () => {
-      const name = {firstName: 'Michael', lastName: 'Garfinkle'};
-      const i18n = new I18n(defaultTranslations, {locale: 'en'});
-      expect(i18n.abbreviateName(name)).toBeDefined();
-      expect(i18n.abbreviateName(name)).toBe(tryAbbreviateName(name));
-    });
-  });
-
-  describe('#abbreviateBusinessName()', () => {
-    it('returns input name if no abbreviation found', () => {
-      // no abbreviation as has space in last name
-      const input = {name: '😀😃😄'};
-      const i18n = new I18n(defaultTranslations, {locale: 'en'});
-      expect(i18n.abbreviateBusinessName(input)).toBe(input.name);
-    });
-
-    it('returns abbreviated name if abbreviation found', () => {
-      const input = {name: 'shop-123'};
-      const i18n = new I18n(defaultTranslations, {locale: 'en'});
-      expect(i18n.abbreviateBusinessName(input)).toBeDefined();
-      expect(i18n.abbreviateBusinessName(input)).toBe(
-        tryAbbreviateBusinessName(input),
-      );
-    });
-  });
-
   describe('#translationKeyExists', () => {
     it('returns true if the translation key exists', () => {
       const mockResult = {hello: 'translated string'};
@@ -2516,20 +2353,6 @@ describe('I18n', () => {
 
       const result = i18n.translationKeyExists(key);
       expect(result).toBe(false);
-    });
-  });
-
-  describe('#hasEasternNameOrderFormatter', () => {
-    it('returns true if easternNameOrderFormatter exists', () => {
-      const i18n = new I18n(defaultTranslations, {locale: 'ja'});
-
-      expect(i18n.hasEasternNameOrderFormatter()).toBe(true);
-    });
-
-    it('returns false if custom name formatter does not exist', () => {
-      const i18n = new I18n(defaultTranslations, {locale: 'en'});
-
-      expect(i18n.hasEasternNameOrderFormatter()).toBe(false);
     });
   });
 });
